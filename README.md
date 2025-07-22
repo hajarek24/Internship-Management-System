@@ -10,15 +10,11 @@
     - [MCD: Modèle Conceptuel de Données](#mcd-modèle-conceptuel-de-données)
   - [Partie traitements](#partie-traitements)
     - [Acteurs](#acteurs)
-    - [MCC: Modèle Conceptuel des Communications](#mcc-modèle-conceptuel-des-communications)
     - [Traitement des stages](#traitement-des-stages)
-      - [GOE - stages: Graphe d’Ordonnancement des Evénements](#goe---stages-graphe-dordonnancement-des-evénements)
-      - [MCT - stages: Modèle Conceptuel des Traitements](#mct---stages-modèle-conceptuel-des-traitements)
-      - [MOT - stages: Modèle Organisationnel des Traitements](#mot---stages-modèle-organisationnel-des-traitements)
-    - [Traitement des inscriptions](#traitement-des-inscriptions)
-      - [GOE - inscriptions](#goe---inscriptions)
-      - [MCT - inscriptions](#mct---inscriptions)
-      - [MOT - inscriptions](#mot---inscriptions)
+      - [GOE : Graphe d'Ordonnancement des Événements](#goe---internships-event-scheduling-graph)
+      - [MCT : Modèle Conceptuel des Traitements]
+      - [MOT : Modèle Organisationnel des Traitements]
+
 
 # Technologies
 
@@ -43,9 +39,28 @@ Afin d’assurer une structuration optimale de nos données au sein de notre bas
 
 Le dictionnaire de données est un document qui regroupe et décrit toutes les informations utilisées dans le système. Il précise les entités, les attributs, les types de données, leurs longueurs et leurs significations. Chaque donnée a des règles de validation et de saisie pour assurer sa précision et sa pertinence. Il nous aide à mieux comprendre la structure des données.
 
-<p align="center">
-  <img src="assets/dictionnaire de donnees.PNG" alt="Dictionnaire de données"/>
-</p>
+| Entity        | Attribute          | Type         | Description                          | Constraints          |
+|---------------|--------------------|--------------|--------------------------------------|----------------------|
+| **Offre**     | tuteur             | VARCHAR(50)  | Encadrant externe de l'entreprise assigné avec l'offre | Non nul |
+| **Utilisateur** | id_user           | ID           | Identifiant unique de l'utilisateur  | Clé primaire, auto-incrément |
+|               | login_user         | VARCHAR(50)  | Identifiant unique utilisé pour la connexion au système | Unique, non nul |
+|               | mdps_user          | VARCHAR(100) | Mot de passe hashé de l'utilisateur  | Non nul |
+|               | type_user          | ENUM         | Type d'utilisateur (Etudiant, entreprise, gestionnaires) | Non nul |
+| **Candidature** | id_cand           | ID           | Identifiant unique de la candidature | Clé primaire |
+|               | id_etudiant        | ID           | Référence à l'étudiant               | Clé étrangère |
+|               | id_offre           | ID           | Référence à l'offre de l'étudiant    | Clé étrangère |
+|               | statut_cand        | ENUM         | Statut de la candidature (En attente, Acceptée, Refusée) | Par défaut: En attente |
+|               | date_cand          | DATE         | Date de soumission                   | Générée automatiquement |
+| **Gestionnaire** | id_gest           | ID           | Identifiant du gestionnaire           | Clé primaire |
+|               | nom_gest           | VARCHAR(50)  | Nom du gestionnaire                   | Non nul |
+|               | prenom_gest        | VARCHAR(50)  | Prénom du gestionnaire                | Non nul |
+|               | email_gest         | VARCHAR(100) | Adresse email du gestionnaire         | Unique, non nul |
+|               | tel_gest           | VARCHAR(15)  | Numéro de téléphone                   | Non nul |
+|               | promotion_associee | ENUM         | Promotion supervisée (1A, 2A ou 3A ou tous) | Non nul (null si gestionnaire de l'école) |
+| **Convention** | id_convention      | ID           | Identifiant unique de la convention   | Clé primaire |
+|               | id_cand            | ID           | Référence à la candidature validée    | Clé étrangère |
+|               | statut_convention  | ENUM         | Statut de la convention (En cours, signée, refusée) | Par défaut: En cours |
+|               | fichier_pdf        | BLOB         | Convention générée au format PDF      | Non nul |
 
 ### Règles de gestion
 Les règles de gestion définissent les contraintes, les validations et les relations qui encadrent l’utilisation des données dans le système. Elles permettent de garantir l’intégrité et la cohérence des informations, tout en traduisant les exigences métier en mécanismes opérationnels.
@@ -142,3 +157,132 @@ principales entités sont :
 </p>
 
 ## Partie traitements
+
+Le système que nous avons développé implique plusieurs traitements liés aux étudiants et à leurs stages. Afin de structurer et de clarifier ces processus, nous avons opté pour leur modélisation à travers les diagrammes de traitement de la méthode Merise. Ces traitements se divisent en deux axes principaux : la gestion des inscriptions et la gestion des stages.
+
+### Acteurs
+
+Dans la partie traitement de notre système, plusieurs acteurs jouent un rôle clé pour assurer le bon déroulement des opérations.
+
+#### Étudiant
+L'étudiant est le principal utilisateur de la plateforme. Son rôle est de rechercher, postuler et suivre les offres de stage.
+
+**Fonctionnalités :**
+- Créer un compte et s'authentifier sur la plateforme
+- Compléter son profil (CV, lettre de motivation, coordonnées)
+- Consulter les offres de stage disponibles
+- Soumettre des candidatures pour les stages
+- Suivre l'état des candidatures (en attente, acceptée, rejetée)
+- Recevoir des notifications (mises à jour des candidatures, nouvelles offres)
+
+#### Gestionnaire Principal
+Responsable de l'administration générale de la plateforme. Valide les comptes des différents utilisateurs.
+
+**Fonctionnalités :**
+- Valider ou rejeter les comptes utilisateurs
+- Attribuer des responsabilités aux gestionnaires secondaires
+- Gérer les conventions de stage générées
+- Superviser les activités des gestionnaires secondaires
+- Gérer les paramètres généraux de la plateforme
+
+#### Gestionnaire Secondaire
+En charge de la supervision des offres et candidatures, et de l'interaction avec les entreprises.
+
+**Fonctionnalités :**
+- Superviser les offres de stage soumises
+- Publier des recommandations/offres spécifiques par promotion (1A, 2A, 3A)
+
+#### Entreprise
+Utilise la plateforme pour proposer des stages et recruter des étudiants.
+
+**Fonctionnalités :**
+- Créer un compte et publier des offres de stage
+- Consulter et valider/rejeter les candidatures
+- Collaborer pour formaliser les conventions de stage
+
+### Traitement des stages
+
+#### GOE : Graphe d'Ordonnancement des Événements
+
+Processus complet de gestion des stages :
+
+1. Lancement de la période des stages à l'ENSIAS
+2. Soumission des offres par les entreprises
+3. Validation/rejet des offres par les gestionnaires
+4. Publication des offres validées
+5. Soumission des candidatures par les étudiants
+6. Examen des candidatures par les entreprises
+   - Si refus : Processus s'arrête pour cette candidature
+   - Si accepté : Processus continue
+7. Génération et livraison de la convention
+8. Signature de la convention par l'entreprise
+9. Confirmation du stage
+10. Désignation d'un professeur encadrant
+11. Déroulement du stage avec suivi régulier
+12. Remplissage de la fiche d'évaluation
+13. Fin du stage
+
+<p align="center">
+  <img src="assets/GOE_stages.png" alt="Le graphe d’ordonnancement des événements pour les stages" width="400px"/>
+</p>
+
+#### MCT : Modèle Conceptuel des Traitements
+
+Le Modèle Conceptuel des Traitements est une représentation visuelle décrivant le fonctionnement du processus, montrant les différentes étapes et leurs relations. Il illustre la circulation et le traitement des informations dans le système.
+
+**Processus décrit par le MCT :**
+
+1. Début de la période de stage à l'ENSIAS
+2. Soumission des offres de stage par les entreprises via la plateforme
+3. Validation/rejet des offres par le gestionnaire de stages
+4. Publication des offres validées (accessibles aux étudiants)
+5. Consultation et candidature des étudiants aux offres disponibles
+6. Examen des candidatures par l'entreprise :
+   - **Acceptation** :
+     - Confirmation du stage
+     - Génération de la convention
+     - Signature par l'entreprise
+     - Affectation d'un encadrant interne ENSIAS
+     - Début du stage
+   - **Rejet** :
+     - Notification envoyée à l'étudiant
+7. Remplissage de la fiche d'évaluation en fin de stage
+8. Mise à jour du statut du stage (terminé)
+9. Clôture du processus de stage
+
+<p align="center">
+  <img src="assets/MCT - Gestion des inscriptions.png" alt="Le modèle conceptuel des traitements pour les stages"/>
+</p>
+
+#### MOT : Modèle Organisationnel des Traitements
+
+Le MOT définit la gestion des informations et processus au sein du système, précisant les interactions entre entités et le traitement des données.
+
+**Caractéristiques principales :**
+
+**Entités impliquées :**
+- Étudiant
+- Gestionnaire de stages (secondaire)
+- Entreprise 
+- Gestionnaire de l'école (principal)
+
+**Éléments clés :**
+1. **Case temps** : Spécifie les étapes du processus :
+   - Période de stage
+   - Début de stage
+   - Fin de stage
+
+2. **Case nature** : Indique le type de traitement :
+   - Manuel
+   - Automatique
+   - Semi-automatique
+
+**Particularités :**
+- La plupart des traitements sont manuels
+- Exception : Le traitement des réponses aux candidatures est automatique
+  - Acceptation d'une candidature → Annulation automatique des autres candidatures de l'étudiant
+  - Rejet d'une candidature → Notification à l'étudiant, autres candidatures restent en "attente"
+  
+<p align="center">
+  <img src="assets/MCT - Gestion des inscriptions.png" alt="Le modèle conceptuel des traitements pour les stages"/>
+</p>
