@@ -83,3 +83,62 @@ Les règles de gestion définissent les contraintes, les validations et les rela
 - Les gestionnaires secondaires sont spécialisés par promotion (1A, 2A, 3A)
 - Les entreprises n'ont accès qu'à leurs propres offres et stages
 
+### MCD: Modèle Conceptuel de Données
+ Le MCD est une représentation graphique des données et des relations entre elles. Il traduit les besoins
+métier en un schéma conceptuel qui montre comment les différentes entités interagissent. Dans ce projet, les
+principales entités sont :
+
+#### Gestionnaire Principal
+- Représente le responsable de l'école (ENSIAS)
+- Gère les relations entre étudiants, stages et conventions
+- Crée les comptes des gestionnaires de stages
+- Approuve les comptes créés par les étudiants et entreprises
+
+#### Gestionnaire Secondaire
+- Responsable de la coordination et du suivi des stages
+- Répartition par niveaux académiques :
+  - 1ère année (1A)
+  - 2ème année (2A) 
+  - 3ème année (3A)
+
+#### Utilisateur
+- Profils possibles :
+  - Étudiant
+  - Gestionnaire
+  - Entreprise
+
+#### Étudiant
+- Soumet des candidatures pour des offres de stage
+- Gère son profil et ses documents
+
+#### Entreprise 
+- Propose des offres de stage
+- Consulte les candidatures reçues
+
+#### Offre
+- Proposition de stage créée par une entreprise
+- Contient les détails du stage proposé
+
+#### Candidature
+- Demande d'un étudiant pour une offre spécifique
+- Contient toutes les informations relatives à la candidature
+
+#### Convention
+- Document généré après acceptation mutuelle
+- Formalise l'accord de stage
+
+#### Relations Principales
+
+- **Soumet** : Étudiant → Candidature → Offre
+- **Propose** : Entreprise → Offre
+- **Valide/Rejette** : Gestionnaire → Candidature
+- **Génère** : Système → Convention (après acceptation)
+- **Approuve** : Gestionnaire → Compte Utilisateur
+- **Est** : (Gestionnaire/Étudiant) → Utilisateur
+- **Gère** : Gestionnaire → Offres (par niveau)
+- **Reçoit** : Entreprise → Candidatures
+<p align="center">
+  <img src="assets/MCD.png" alt="Le modèle conceptuel de données"/>
+</p>
+
+## Partie traitements
